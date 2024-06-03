@@ -8,5 +8,6 @@ export class Ability {
 
   @Column({ type: 'varchar', length: 50 })
   name: string;
+  
 
 }

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PokemonService } from './pokemon.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { lastValueFrom, map } from 'rxjs';
 
 @Controller('pokemon')
 export class PokemonController {
@@ -18,8 +19,14 @@ export class PokemonController {
   }
 
   @Get('fetch')
-  fetchAll() {
-    return this.pokemonService.fetchAllPokemon();
+  async fetchAll() {
+    
+    const pokemonList = await lastValueFrom(this.pokemonService.fetchAllPokemon());
+
+    for (const pokemon of pokemonList) {
+      await this.pokemonService.fetchPokemonDetails(pokemon.url);
+    }
+    return 'Done';
   }
 
   @Get(':id')

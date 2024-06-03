@@ -12,6 +12,12 @@ export class TypesController {
     return this.typesService.create(createTypeDto);
   }
 
+  @Get('/fetch')
+  async fetchAll() {
+    const types = await this.typesService.fetchPokemonTypes();
+    return types;
+  }
+
   @Get()
   findAll() {
     return this.typesService.findAll();

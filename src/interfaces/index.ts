@@ -218,3 +218,31 @@ export interface Result {
   name: string;
   url:  string;
 }
+
+
+export interface PokemonAbilityDetails {
+  flavor_text_entries: FlavorTextEntry[];
+  name:                string;
+  names:               Name[];
+}
+
+
+export interface Name {
+  language: Color;
+  name:     string;
+}
+
+
+
+export interface PokemonTypeDetails {
+  id:                    number;
+  moves:                 Color[];
+  name:                  string;
+  names:                 Name[];
+}
+
+
+export interface Name {
+  language: GenericData;
+  name:     string;
+}

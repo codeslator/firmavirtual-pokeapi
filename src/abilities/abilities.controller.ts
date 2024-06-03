@@ -12,6 +12,13 @@ export class AbilitiesController {
     return this.abilitiesService.create(createAbilityDto);
   }
 
+  @Get('fetch')
+  async fetchAll() {
+    const abilities = await this.abilitiesService.fetchPokemonAbilities();
+    return abilities;
+
+  }
+
   @Get()
   findAll() {
     return this.abilitiesService.findAll();

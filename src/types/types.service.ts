@@ -7,8 +7,11 @@ import { Repository } from 'typeorm';
 import { catchError, lastValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
 import { Type } from './entities/type.entity';
-import { APIResponse } from 'src/interfaces';
+import { APIResponse, PokemonTypeDetails } from 'src/interfaces';
 
+interface TypeDetails {
+  name: string;
+}
 @Injectable()
 export class TypesService {
   private readonly logger = new Logger(TypesService.name);
@@ -19,9 +22,26 @@ export class TypesService {
     private readonly httpService: HttpService,
   ) {}
 
-  private pokeApiUrl = 'https://pokeapi.co/api/v2/type/';
+  private pokeApiUrl = 'https://pokeapi.co/api/v2/type';
 
 
+  async fetchTypesDetails(url: string): Promise<TypeDetails> {
+    const { data: typeData } = await lastValueFrom(
+      this.httpService.get<PokemonTypeDetails>(url).pipe(
+        catchError((error: AxiosError) => {
+          this.logger.error(error.response.data);
+          throw 'An error happened!';
+        }),
+      ),
+    );
+    
+    const type = typeData.names.find((name) => name.language.name === 'es');
+    const typeDetails: TypeDetails = {
+      name: type.name,
+    }
+
+    return typeDetails;
+  }
 
   // Service to seed pokemon types
   async fetchPokemonTypes(): Promise<Type[]> {
@@ -35,8 +55,10 @@ export class TypesService {
       ),
     );
     for (const type of typeData.results) {
+        const typeDetails = await this.fetchTypesDetails(type.url)
         const newType = new Type();
-        newType.name = type.name;
+        newType.name = typeDetails.name;
+        newType.key = type.name;
         types.push(await this.typeRepository.save(newType));
     }
     return types;
