@@ -1,17 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateAbilityDto } from './dto/create-ability.dto';
-import { UpdateAbilityDto } from './dto/update-ability.dto';
 import { Ability } from './entities/ability.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { catchError, lastValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
-import { APIResponse, PokemonAbilityDetails } from 'src/interfaces';
-
-interface AbilityDetails {
-  name: string;
-}
+import { APIResponse, AbilityDetails, PokemonAbilityDetails } from 'src/interfaces';
 
 @Injectable()
 export class AbilitiesService {
@@ -47,11 +41,11 @@ export class AbilitiesService {
       }
       return false;
     }).find((name) => isSpanishOrEnglish(name.language.name));
-    const abilitiDetals: AbilityDetails = {
+    const abilityDetails: AbilityDetails = {
       name: abilityName.name,
     }
 
-    return abilitiDetals;
+    return abilityDetails;
   }
 
   async fetchPokemonAbilities(): Promise<Ability[]> {
@@ -69,16 +63,10 @@ export class AbilitiesService {
       const abilityDetails = await this.fetctAbilityDetails(ability.url);
       const newAbility = new Ability();
       newAbility.name = abilityDetails.name;
+      newAbility.key = ability.name;
       abilities.push(await this.abilitiesRepository.save(newAbility));
-      console.log(abilityDetails, newAbility.id)
     }
     return abilities;
-  }
-
-
-
-  create(createAbilityDto: CreateAbilityDto) {
-    return 'This action adds a new ability';
   }
 
   findAll() {
@@ -87,13 +75,5 @@ export class AbilitiesService {
 
   findOne(id: number) {
     return `This action returns a #${id} ability`;
-  }
-
-  update(id: number, updateAbilityDto: UpdateAbilityDto) {
-    return `This action updates a #${id} ability`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} ability`;
   }
 }

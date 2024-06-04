@@ -1,6 +1,4 @@
-import { Entity, Column, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Pokemon } from './pokemon.entity';
-import { Ability } from 'src/abilities/entities/ability.entity';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'pokemon_abilities' })
 export class PokemonAbilities {
@@ -10,12 +8,4 @@ export class PokemonAbilities {
   @Column({ type: 'boolean', default: false })
   is_hidden: boolean;
 
-
-  @OneToOne(() => Pokemon)
-  @JoinColumn({ name: 'pokemon_id' })
-  pokemon: Pokemon;
-
-  @OneToOne(() => Ability)
-  @JoinColumn({ name: 'ability_id' })
-  ability: Ability;
 }

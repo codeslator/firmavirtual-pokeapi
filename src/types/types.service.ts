@@ -1,17 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateTypeDto } from './dto/create-type.dto';
-import { UpdateTypeDto } from './dto/update-type.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
 import { Repository } from 'typeorm';
 import { catchError, lastValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
 import { Type } from './entities/type.entity';
-import { APIResponse, PokemonTypeDetails } from 'src/interfaces';
+import { APIResponse, PokemonTypeDetails, TypeDetails } from 'src/interfaces';
 
-interface TypeDetails {
-  name: string;
-}
+
 @Injectable()
 export class TypesService {
   private readonly logger = new Logger(TypesService.name);
@@ -64,25 +60,11 @@ export class TypesService {
     return types;
   }
 
-
-
-  create(createTypeDto: CreateTypeDto) {
-    return 'This action adds a new type';
-  }
-
   findAll() {
     return `This action returns all types`;
   }
 
   findOne(id: number) {
     return `This action returns a #${id} type`;
-  }
-
-  update(id: number, updateTypeDto: UpdateTypeDto) {
-    return `This action updates a #${id} type`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} type`;
   }
 }

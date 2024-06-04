@@ -1,6 +1,6 @@
 import { Ability } from 'src/abilities/entities/ability.entity';
 import { Type } from 'src/types/entities/type.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
 
 @Entity()
 export class Pokemon {
@@ -30,10 +30,18 @@ export class Pokemon {
   @Column({ type: 'varchar', length: 255 })
   cry_url: string;
 
-  
-  @OneToMany(() => Ability, (ability) => ability.id)
-  @JoinColumn({ name: 'ability_id' })
-  ability: Ability[]
+  @ManyToMany(() => Ability)
+  @JoinTable({ 
+    name: 'pokemon_abilities', 
+    joinColumn: {
+      name: "pokemon_id",
+      referencedColumnName: "id"
+    }, 
+    inverseJoinColumn: {
+      name: "ability_id",
+      referencedColumnName: "id"
+    }})
+    abilities: Ability[];
 
 
   @ManyToMany(() => Type)

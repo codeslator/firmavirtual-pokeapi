@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { PokemonService } from './pokemon.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
-import { lastValueFrom, map } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 
 @Controller('pokemon')
 export class PokemonController {
@@ -13,9 +13,21 @@ export class PokemonController {
     return this.pokemonService.create(createPokemonDto);
   }
 
+  
+
+  // @Get()
+  // findAll() {
+  //   return this.pokemonService.findAll();
+  // }
+
   @Get()
-  findAll() {
-    return this.pokemonService.findAll();
+  async getFilteredAndSortedData(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+    @Query('sort') sort?: string,
+    @Query('order') order?: { [key: string]: 'ASC' | 'DESC' },
+  ) {
+    return await this.pokemonService.findPaginatedAndFiltered(page, limit, sort, order);
   }
 
   @Get('fetch')

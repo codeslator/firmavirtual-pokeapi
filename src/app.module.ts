@@ -11,7 +11,7 @@ import { AbilitiesModule } from './abilities/abilities.module';
 import { TypesModule } from './types/types.module';
 import { Ability } from './abilities/entities/ability.entity';
 import { Type } from './types/entities/type.entity';
-import { PokemonAbilities } from './pokemon/entities/pokemon_abilities.entity';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -25,13 +25,14 @@ import { PokemonAbilities } from './pokemon/entities/pokemon_abilities.entity';
       database: process.env.POSTGRES_DB,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
-      entities: [Pokemon, Stat, Ability, Type, PokemonAbilities],
+      entities: [Pokemon, Stat, Ability, Type],
       synchronize: true,
     }),
     PokemonModule,
     StatsModule,
     AbilitiesModule,
     TypesModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],

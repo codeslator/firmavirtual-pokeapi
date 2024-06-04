@@ -246,3 +246,33 @@ export interface Name {
   language: GenericData;
   name:     string;
 }
+
+export interface PokemonResult {
+  name: string;
+  url: string;
+}
+
+export interface SpecieDetails {
+  name: string;
+  description: string;
+  class: string
+}
+
+export interface PokemonType {
+  slot: number;
+  type: Color;
+}
+
+export interface PokemonAbility {
+  slot: number;
+  ability: Color;
+  is_hidden: boolean;
+}
+
+export interface TypeDetails {
+  name: string;
+}
+
+export interface AbilityDetails {
+  name: string;
+}

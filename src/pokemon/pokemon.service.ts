@@ -4,23 +4,14 @@ import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pokemon } from './entities/pokemon.entity';
-import { Repository } from 'typeorm';
 import { Observable, catchError, firstValueFrom, lastValueFrom, map, throwError } from 'rxjs';
 import { AxiosError, AxiosResponse } from 'axios';
 import { Type } from 'src/types/entities/type.entity';
-import { APIResponse, PokemonDetails, PokemonSpecieInfo } from 'src/interfaces';
+import { PokemonAbility, PokemonDetails, PokemonResult, PokemonSpecieInfo, PokemonType, SpecieDetails } from 'src/interfaces';
 import { Stat } from 'src/stats/entities/stat.entity';
-
-interface PokemonResult {
-  name: string;
-  url: string;
-}
-
-interface SpecieDetails {
-  name: string;
-  description: string;
-  class: string
-}
+import { Ability } from 'src/abilities/entities/ability.entity';
+import { Repository } from 'typeorm';
+import { getPreferredLanguageObject } from 'src/interfaces/functions';
 
 @Injectable()
 export class PokemonService {
@@ -33,13 +24,12 @@ export class PokemonService {
     private readonly typeRepository: Repository<Type>,
     @InjectRepository(Stat)
     private readonly statRepository: Repository<Stat>,
+    @InjectRepository(Ability)
+    private readonly abilityRepository: Repository<Ability>,
     private readonly httpService: HttpService,
   ) {}
 
-  private pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon?limit=3';
-
-
-
+  private pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon?limit=1025';
   
   private async fetchPokemonSpeciesDetails(url: string): Promise<SpecieDetails> {
     const { data: specieData} = await firstValueFrom(
@@ -52,9 +42,9 @@ export class PokemonService {
     );
 
     const pokeName = specieData.names.find((name) => name.language.name === 'es');
-    const pokeClass = specieData.genera.filter((genus) => (genus.language.name === 'es')).pop();
-    const pokeDescription = specieData.flavor_text_entries.filter((desc) => desc.language.name === 'es').pop();
-  
+    const pokeDescription = getPreferredLanguageObject(specieData.flavor_text_entries);
+    const pokeClass = getPreferredLanguageObject(specieData.genera);
+
     const data = {
       description: pokeDescription.flavor_text,
       class: pokeClass.genus,
@@ -63,30 +53,42 @@ export class PokemonService {
     return data;
   }
   
+  private async getPokemonTypes(types: PokemonType[]): Promise<Type[]> {
+    const pokemonTypes = [];
+    for (const type of types) {
+      const foundType = await this.typeRepository.findOne({ where: { key: type.type.name } });
+      if (foundType) {
+        pokemonTypes.push(foundType);
+      } 
+    }
+    return pokemonTypes;
+  }
 
+  private async getPokemonAbilities(abilities: PokemonAbility[]): Promise<Ability[]> {
+    const pokemonAbilities = [];
+    // ? POKEAPI HAS SOME DUPLICATES ABILITIES IN A POKEMON, THIS REMOVES DUPLICATES, SEE POKEMON 948
+    for (const ability of abilities.filter((item, index) => abilities.findIndex((elem) => item.ability.name === elem.ability.name) === index)) {
+      const foundAbility = await this.abilityRepository.findOne({ where: { key: ability.ability.name } });
+      if (foundAbility) {
+        pokemonAbilities.push(foundAbility);
+      } 
+    }
+    return pokemonAbilities;
+  }
 
-  async fetchPokemonDetails(url: string): Promise<Pokemon> {
-    const { data: pokemonData } = await lastValueFrom(
-      this.httpService.get<PokemonDetails>(url).pipe(
-        catchError((error: AxiosError) => {
-          this.logger.error(error.response.data);
-          throw 'An error happened!';
-        }),
-      ),
-    );
-
-
+  private async savePokemon(pokemonData: PokemonDetails): Promise<Pokemon> {
     const specieDetails = await this.fetchPokemonSpeciesDetails(pokemonData.species.url)
-    
-    // Save Pokemon Data
+
     const pokemon = new Pokemon();
     pokemon.name = specieDetails.name;
     pokemon.weight = pokemonData.weight;
     pokemon.height = pokemonData.height;
-    pokemon.description = specieDetails.description;
+    pokemon.description = specieDetails.description.replace('\n', ' ');
     pokemon.class = specieDetails.class;
     pokemon.image_url = pokemonData.sprites.other['official-artwork'].front_default;
     pokemon.cry_url = pokemonData.cries.latest;
+    pokemon.types = await this.getPokemonTypes(pokemonData.types);
+    pokemon.abilities = await this.getPokemonAbilities(pokemonData.abilities);
     await this.pokemonRepository.save(pokemon);
 
     // Save stats for current pokemon
@@ -98,11 +100,23 @@ export class PokemonService {
     pokemonStat.pokemon = pokemon;
     await this.statRepository.save(pokemonStat);
 
-    // pokemon.sprites = pokemonData.sprites;
-    // pokemon.types = await this.fetchPokemonTypes(pokemonData.types);
-
     return pokemon;
   }
+
+  async fetchPokemonDetails(url: string): Promise<Pokemon> {
+    const { data: pokemonData } = await lastValueFrom(
+      this.httpService.get<PokemonDetails>(url).pipe(
+        catchError((error: AxiosError) => {
+          this.logger.error(error.response.data);
+          throw 'An error happened!';
+        }),
+      ),
+    );
+    
+    const pokemon = this.savePokemon(pokemonData);
+    return pokemon;
+  }
+  
 
   fetchAllPokemon(): Observable<PokemonResult[]> {
     return this.httpService.get(this.pokeApiUrl)
@@ -115,22 +129,37 @@ export class PokemonService {
       );
   }
 
-  // async savePokemons(pokemons: Pokemon[]): Promise<void> {
-  //   for (const pokemon of pokemons) {
-  //     await this.pokemonRepository.save(pokemon);
-  //   }
-  // }
-
   create(createPokemonDto: CreatePokemonDto) {
     return 'This action adds a new pokemon';
   }
 
   findAll() {
-    return `This action returns all pokemon`;
+    return this.pokemonRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} pokemon`;
+    const pokemon = this.pokemonRepository.findOneBy({ id });
+    if (!pokemon) {
+      return null;
+    }
+    return pokemon;
+  }
+
+  async findPaginatedAndFiltered(
+    page: number,
+    limit: number,
+    sort: string = 'id',
+    order?: { [key: string]: 'ASC' | 'DESC' }
+  ): Promise<{ results: Pokemon[], count: number }> {
+    console.log(sort, order)
+    const offset = (page - 1) * limit;
+    const [results, total] = await this.pokemonRepository.findAndCount({
+      order: { [sort]: order },
+      take: limit,
+      skip: offset,
+    });
+
+    return { results, count: total };
   }
 
   update(id: number, updatePokemonDto: UpdatePokemonDto) {
