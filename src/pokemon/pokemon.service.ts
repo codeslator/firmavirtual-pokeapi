@@ -138,7 +138,14 @@ export class PokemonService {
   }
 
   findOne(id: number) {
-    const pokemon = this.pokemonRepository.findOneBy({ id });
+    const pokemon = this.pokemonRepository.findOne({
+      where: { id },
+      relations: {
+        types: true,
+        abilities: true,
+        stats: true,
+      }
+    });
     if (!pokemon) {
       return null;
     }
