@@ -1,6 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { TypesService } from './types.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Types')
 @Controller('types')
 export class TypesController {
   constructor(private readonly typesService: TypesService) { }

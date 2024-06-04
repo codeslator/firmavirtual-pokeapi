@@ -3,7 +3,9 @@ import { PokemonService } from './pokemon.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { lastValueFrom } from 'rxjs';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Pokemon')
 @Controller('pokemon')
 export class PokemonController {
   constructor(private readonly pokemonService: PokemonService) {}
@@ -13,12 +15,6 @@ export class PokemonController {
     return this.pokemonService.create(createPokemonDto);
   }
 
-  
-
-  // @Get()
-  // findAll() {
-  //   return this.pokemonService.findAll();
-  // }
 
   @Get()
   async getFilteredAndSortedData(
@@ -32,9 +28,7 @@ export class PokemonController {
 
   @Get('fetch')
   async fetchAll() {
-    
     const pokemonList = await lastValueFrom(this.pokemonService.fetchAllPokemon());
-
     for (const pokemon of pokemonList) {
       await this.pokemonService.fetchPokemonDetails(pokemon.url);
     }
