@@ -27,12 +27,12 @@ export class PokemonService {
     @InjectRepository(Ability)
     private readonly abilityRepository: Repository<Ability>,
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
 
   private pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon?limit=1025';
-  
+
   private async fetchPokemonSpeciesDetails(url: string): Promise<SpecieDetails> {
-    const { data: specieData} = await firstValueFrom(
+    const { data: specieData } = await firstValueFrom(
       this.httpService.get<PokemonSpecieInfo>(url).pipe(
         catchError((error: AxiosError) => {
           this.logger.error(error.response.data);
@@ -52,14 +52,14 @@ export class PokemonService {
     }
     return data;
   }
-  
+
   private async getPokemonTypes(types: PokemonType[]): Promise<Type[]> {
     const pokemonTypes = [];
     for (const type of types) {
       const foundType = await this.typeRepository.findOne({ where: { key: type.type.name } });
       if (foundType) {
         pokemonTypes.push(foundType);
-      } 
+      }
     }
     return pokemonTypes;
   }
@@ -71,7 +71,7 @@ export class PokemonService {
       const foundAbility = await this.abilityRepository.findOne({ where: { key: ability.ability.name } });
       if (foundAbility) {
         pokemonAbilities.push(foundAbility);
-      } 
+      }
     }
     return pokemonAbilities;
   }
@@ -112,11 +112,11 @@ export class PokemonService {
         }),
       ),
     );
-    
+
     const pokemon = this.savePokemon(pokemonData);
     return pokemon;
   }
-  
+
 
   fetchAllPokemon(): Observable<PokemonResult[]> {
     return this.httpService.get(this.pokeApiUrl)
@@ -149,13 +149,30 @@ export class PokemonService {
     page: number,
     limit: number,
     sort?: string,
-    order?: { [key: string]: 'ASC' | 'DESC' }
+    order?: { [key: string]: 'ASC' | 'DESC' } | { [key: string]: string }
   ): Promise<{ results: Pokemon[], count: number }> {
     const offset = (page - 1) * limit;
+    let ordering;
+    if (sort) {
+      ordering = order;
+      if (sort.includes('.')) {
+        const [relation, column] = sort.split('.');
+        sort = relation;
+        ordering = {
+          [column]: order,
+        }
+      }
+    }
     const [results, total] = await this.pokemonRepository.findAndCount({
-      order: { [sort]: order },
+      order: { [sort]: ordering },
       take: limit,
       skip: offset,
+      relations: {
+        stats: true,
+        types: true,
+        abilities: true,
+      },
+
     });
 
     return { results, count: total };

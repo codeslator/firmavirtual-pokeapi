@@ -1,6 +1,7 @@
 import { Ability } from 'src/abilities/entities/ability.entity';
+import { Stat } from 'src/stats/entities/stat.entity';
 import { Type } from 'src/types/entities/type.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity()
 export class Pokemon {
@@ -56,4 +57,9 @@ export class Pokemon {
       referencedColumnName: "id"
     }})
   types: Type[];
+
+
+  @OneToOne(() => Stat, (stats) => stats.pokemon) // specify inverse side as a second parameter
+  @JoinColumn({ name: 'id' })
+  stats: Stat;
 }

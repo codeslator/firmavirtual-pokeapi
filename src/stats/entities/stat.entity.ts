@@ -26,7 +26,7 @@ export class Stat {
   speed: number;
 
 
-  @OneToOne(() => Pokemon)
+  @OneToOne(() => Pokemon, (pokemon) => pokemon.stats)
   @JoinColumn({ name: 'pokemon_id' })
   pokemon: Pokemon;
 }
