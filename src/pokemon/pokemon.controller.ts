@@ -20,10 +20,12 @@ export class PokemonController {
   async getFilteredAndSortedData(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
+    @Query('filter') filter: string = 'id',
+    @Query('search') search: string,
     @Query('sort') sort?: string,
     @Query('order') order?: { [key: string]: 'ASC' | 'DESC' },
   ) {
-    return await this.pokemonService.findPaginatedAndFiltered(page, limit, sort, order);
+    return await this.pokemonService.findPaginatedAndFiltered(page, limit, filter, search, sort, order);
   }
 
   @Get('fetch')

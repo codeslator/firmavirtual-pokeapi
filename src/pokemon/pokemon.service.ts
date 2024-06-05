@@ -155,12 +155,15 @@ export class PokemonService {
   async findPaginatedAndFiltered(
     page: number,
     limit: number,
+    filter: string,
+    search: string,
     sort?: string,
     order?: { [key: string]: 'ASC' | 'DESC' } | { [key: string]: string }
   ): Promise<{ results: Pokemon[], count: number }> {
     const offset = (page - 1) * limit;
-    let ordering;
-    if (sort) {
+    let ordering = undefined; // Define ordering flag variable
+    let filtering = undefined; // Define filtering flag variable
+    if (sort) { // If has an specific sort
       ordering = order;
       if (sort.includes('.')) {
         const [relation, column] = sort.split('.');
@@ -170,8 +173,19 @@ export class PokemonService {
         }
       }
     }
+    if (filter) { // If has a specific filter
+      filtering = search;
+      if (filter.includes('.')) {
+        const [relation, column] = filter.split('.');
+        filter = relation;
+        filtering = {
+          [column]: search,
+        }
+      }
+    }
     const [results, total] = await this.pokemonRepository.findAndCount({
       order: { [sort]: ordering },
+      where: { [filter]: filtering },
       take: limit,
       skip: offset,
       relations: {
