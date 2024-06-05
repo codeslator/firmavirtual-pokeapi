@@ -61,10 +61,10 @@ export class TypesService {
   }
 
   findAll() {
-    return `This action returns all types`;
+    return this.typeRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} type`;
+    return this.typeRepository.findOneBy({ id });
   }
 }
