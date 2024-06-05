@@ -7,7 +7,7 @@ To run this app, you must have installed Node, NPM & Docker.
 
 This README has the instructions to install and execute this API. The first step is clone the repository from GitHub.
 ```bash
-git clone https://github.com/codeslator/firmavirtual-pokeapi
+git clone https://github.com/codeslator/firmavirtual-pokeapi.git
 ```
 After clone the repository, you must to install all dependencies.
 ```bash
