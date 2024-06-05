@@ -1,9 +1,8 @@
-# FirmaVirrtual PokeAPI
-Technical Test by **FirmaVirtual Mexico** - @codeslator (Andres Melendez) - API build with **Node + TypeScript** using **NestJS Framework + TypeORM** and **PostgreSQL Database**.
+# FirmaVirtual PokeAPI
+Technical Test by **FirmaVirtual Mexico** - @codeslator (Andres Melendez) - API built with **Node + TypeScript** using **NestJS Framework + TypeORM** and **PostgreSQL Database**.
 ## Requirements
 To run this app, you must have installed Node, NPM & Docker.
 
----
 ## Installation
 
 This README has the instructions to install and execute this API. The first step is clone the repository from GitHub.
