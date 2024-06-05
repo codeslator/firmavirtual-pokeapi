@@ -89,17 +89,14 @@ export class PokemonService {
     pokemon.cry_url = pokemonData.cries.latest;
     pokemon.types = await this.getPokemonTypes(pokemonData.types);
     pokemon.abilities = await this.getPokemonAbilities(pokemonData.abilities);
-    await this.pokemonRepository.save(pokemon);
-
     // Save stats for current pokemon
     const pokemonStat = new Stat();
     pokemonData.stats.map((stat) => {
       const statName = stat.stat.name.replace('-', '_');
       pokemonStat[statName] = stat.base_stat;
     });
-    pokemonStat.pokemon = pokemon;
-    await this.statRepository.save(pokemonStat);
-
+    pokemon.stats = pokemonStat;
+    await this.pokemonRepository.save(pokemon);
     return pokemon;
   }
 

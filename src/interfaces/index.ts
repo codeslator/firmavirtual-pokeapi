@@ -7,7 +7,7 @@ export interface PokemonDetails {
   order:                    number;
   species:                  GenericData;
   sprites:                  Sprites;
-  stats:                    Stat[];
+  stats:                    PokemonStat[];
   types:                    Type[];
   weight:                   number;
 }
@@ -143,7 +143,7 @@ export interface GenerationViii {
   icons: DreamWorld;
 }
 
-export interface Stat {
+export interface PokemonStat {
   base_stat: number;
   effort:    number;
   stat:      GenericData;

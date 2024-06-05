@@ -59,7 +59,7 @@ export class Pokemon {
   types: Type[];
 
 
-  @OneToOne(() => Stat, (stats) => stats.pokemon) // specify inverse side as a second parameter
-  @JoinColumn({ name: 'id' })
+  @OneToOne(() => Stat, { cascade: true }) // specify inverse side as a second parameter
+  @JoinColumn({ name: 'stats_id' })
   stats: Stat;
 }
